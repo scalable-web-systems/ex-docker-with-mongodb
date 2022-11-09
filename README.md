@@ -518,6 +518,10 @@ The important part of the configuration to highlight is:
       - $PWD/data/db:/data/db
 ```
 
+The `$PWD` is the "present working directory" where you run `docker compose`. So, it will map the `data/db` directory in your current directory to the `/data/db` directory inside of the container.
+
+If you run `docker compose -f docker-compose.dev.yml up`, everything will come up as usual. But, you will notice now that the data for the database is now stored inside of your `data/db` folder on your local host.
+
 ## Developing in Docker
 
 Lastly, it would be really nice if we could make changes to our code on the host platform and have it build and run in the docker container. It turns out this is really easy to do. We are simply going to replace the contents of our `app` service in the `docker-compose.dev.yml` file with some configuration that will allows this:
