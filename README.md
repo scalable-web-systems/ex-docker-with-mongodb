@@ -1,6 +1,6 @@
-# Docker with MongoDB
+# Docker Compose, MongoDB, Service
 
-This example demonstrates how to create a simple service using Express, MongoDB, and Docker.
+This example demonstrates how to create a simple service using Express, MongoDB, and Docker. The goal is the write a simple service that connects to a MongoDB service and stores data persistently on disk. We will also want to connect to this service from a browser running on our host platform.
 
 ## Setup
 
@@ -61,7 +61,7 @@ mkdir src
 touch src/index.ts
 ```
 
-Open `index.ts`, and add the following:
+Open `src/index.ts`, and add the following:
 
 ```typescript
 console.log('Hello World');
@@ -479,3 +479,82 @@ You may also be interested in running docker compose through VSCode. To do that 
 ![](img/2022-11-09-14-26-41.png)
 
 This will bring up the system and allow you to connect to it as well. You can also right-click on the `docker-compose.yml` file and select **Compose Down** to bring the containers down.
+
+## Keeping Things Local
+
+In the previous sections we created a MongoDB instance that stored its data in a volume that was on our disk, but is buried inside of the docker application. If we wanted to have Mongo's data stored in a folder that we can access, it may be helpful for debugging. To do this is rather easy. We simply create a new folder:
+
+```bash
+mkdir -p data/db
+```
+
+Next, we copy the `docker-compose.yml` file to a new file called `docker-compose.dev.yml`. We then modify it slightly to map the directory inside of the container where Mongo puts all of its data to the `data/db` directory we just created on the local host. Here is the contents of the new compose file:
+
+```yaml
+version: '3.7'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb_container
+    environment:
+      DATABASE_URL: mongodb://root:rootpassword@mongodb_container:27017/mydb?directConnection=true&authSource=admin
+
+  mongodb_container:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    volumes:
+      - $PWD/data/db:/data/db
+```
+
+The important part of the configuration to highlight is:
+
+```yaml
+    volumes:
+      - $PWD/data/db:/data/db
+```
+
+## Developing in Docker
+
+Lastly, it would be really nice if we could make changes to our code on the host platform and have it build and run in the docker container. It turns out this is really easy to do. We are simply going to replace the contents of our `app` service in the `docker-compose.dev.yml` file with some configuration that will allows this:
+
+```yaml
+version: '3.7'
+services:
+  app:
+    image: node
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb_container
+    environment:
+      DATABASE_URL: mongodb://root:rootpassword@mongodb_container:27017/mydb?directConnection=true&authSource=admin
+    volumes:
+      - $PWD:/usr/app
+    working_dir: /usr/app
+    command: bash -c "npm install && npm run build && npm start"
+
+  mongodb_container:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    volumes:
+      - $PWD/data/db:/data/db
+```
+
+We replaced the `build` attribute with `image` and specified the `node` image. We then added `working_dir` to indicate the working directory of the image and provided the command to run using the `command` attribute. If you run `docker compose -f docker-compose.dev.yml up`, everything will come up as usual. But, we are running the service on the generated `build/index.js` file. So, we need to make sure we build that file every time we make a modification. You can use the method we mentioned before with VSCode or you can do this following.
+
+Add a new script to `package.json`:
+
+```json
+    "watch": "tsc --watch"
+```
+
+Then, run `npm run watch` on your local machine. Now, every edit you make will be compiled from TypeScript to JavaScript into `build/index.js` and seen inside the running container. Because the `build/index.js` file changes, the application inside of the docker container will reload.
+
+That is it!

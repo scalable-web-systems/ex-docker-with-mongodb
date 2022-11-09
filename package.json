@@ -4,8 +4,9 @@
   "description": "An example of a service using docker with mongodb",
   "main": "index.js",
   "scripts": {
-    "start": "node build/index.js",
-    "build": "tsc"
+    "start": "nodemon build/index.js",
+    "build": "tsc",
+    "watch": "tsc --watch"
   },
   "repository": {
     "type": "git",

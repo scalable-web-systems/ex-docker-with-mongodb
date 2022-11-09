@@ -1,0 +1,22 @@
+version: '3.7'
+services:
+  app:
+    image: node
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb_container
+    environment:
+      DATABASE_URL: mongodb://root:rootpassword@mongodb_container:27017/mydb?directConnection=true&authSource=admin
+    volumes:
+      - $PWD:/usr/app
+    working_dir: /usr/app
+    command: bash -c "npm install && npm run build && npm start"
+
+  mongodb_container:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    volumes:
+      - $PWD/data/db:/data/db
