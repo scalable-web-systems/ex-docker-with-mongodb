@@ -474,6 +474,8 @@ Note, we call `start()` at the end.
 
 Now that we have everything set, we can run `docker compose up` and connecting to [http://localhost:3000](http://localhost:3000) should display the list of products stored in the database.
 
+![](img/2022-11-09-15-47-10.png)
+
 You may also be interested in running docker compose through VSCode. To do that you need to have the [Docker extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) installed. Once you have this extension installed, you can right-click on the `docker-compose.yml` file and select **Compose Up**.
 
 ![](img/2022-11-09-14-26-41.png)
