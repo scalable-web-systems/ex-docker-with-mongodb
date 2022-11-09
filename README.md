@@ -1,4 +1,4 @@
-# Docker Compose, MongoDB, Service
+# Docker Compose, MongoDB, & Express
 
 This example demonstrates how to create a simple service using Express, MongoDB, and Docker. The goal is the write a simple service that connects to a MongoDB service and stores data persistently on disk. We will also want to connect to this service from a browser running on our host platform.
 
